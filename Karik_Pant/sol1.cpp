@@ -6,11 +6,11 @@ unordered_map<string,int> skill_val;
 
 struct Skill {
   string name;
-  unordered_map<int,set<int>> persons;
+  map<int,set<string>> persons;
   Skill(string _name) {
     name = _name;
   }
-  void add_person(int person, int level) {
+  void add_person(string person, int level) {
     persons[level].insert(person);
   }
 };
@@ -18,9 +18,8 @@ struct Skill {
 vector<Skill> skills;
 struct Person {
   string name;
-  bool busy;
+  int busy;
   void read(int idx) {
-    busy = false;
     cin >> name;
     int cc; cin >> cc;
     while (cc--) {
@@ -30,7 +29,7 @@ struct Person {
         skill_val.insert({ skill, int(skills.size()) });
         skills.push_back(Skill(skill));
       }
-      skills[skill_val[skill]].add_person(idx, lvl);
+      skills[skill_val[skill]].add_person(name, lvl);
     }
   }
 };
@@ -52,6 +51,19 @@ struct Project {
       req[i] = { skill_val[skill], lvl };
     }
   }
+  vector<string> find_people() {
+    vector<string> people;
+    for (auto A: req) {
+      auto it = *skills[A.first].persons.rbegin();
+      if (it.first >= A.second) {
+        people.push_back(*it.second.begin());
+      } else {
+        people.resize(0);
+        return people;
+      }
+    }
+    return people;
+  }
 };
 
 int main () {
@@ -70,7 +82,22 @@ int main () {
     projects.push_back(project);
   }
 
-  cout << "Skills = " << skills.size() << '\n';
+  // sorting projects on the basis of their deadlines
+  sort(projects.begin(), projects.end(), [&](const Project& A, const Project& B) {
+      return A.meta[1] > B.meta[1];
+    });
+
+  for (Project& project: projects) {
+    vector<string> names = project.find_people();
+    if ((int)names.size() != 0) {
+      cout << "1\n";
+      cout << project.name << '\n';
+      for (const string& name: names) 
+        cout << name << ' ';
+      cout << '\n';
+      break;
+    }
+  }
 
   return 0;
 }
