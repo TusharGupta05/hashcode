@@ -107,20 +107,23 @@ int main () {
 
   // sorting projects on the basis of their deadlines
   sort(projects.begin(), projects.end(), [&](const Project& A, const Project& B) {
-      return A.meta[1] > B.meta[1];
+      return A.meta[1] < B.meta[1];
     });
 
   vector<string> ans_pro;
   vector<vector<string>> ans_con;
   set<int> day; day.insert(0);
+  int mx = -1;
   while (!day.empty()) {
+    mx = max(mx, *day.begin());
     for (Project& project: projects) {
       if (project.completed) continue;
       vector<string> names = project.find_people(*day.begin());
       if ((int)names.size() != 0) {
         ans_pro.push_back(project.name);
         ans_con.push_back(names);
-        day.insert(*day.begin() + project.meta[0]);
+        if (*day.begin() + project.meta[0] > mx)
+          day.insert(*day.begin() + project.meta[0]);
       }
     }
     day.erase(*day.begin());

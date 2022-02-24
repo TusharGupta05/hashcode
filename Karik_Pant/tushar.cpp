@@ -113,10 +113,16 @@ class Project {
 vector<pair<Project, vector<Contributor>>> ans;
 
 void backtrack ( vector<Project>& p, vector<Contributor>& c ) {
+	vector<bool> don ( p.size(), false );
+	bool minus = false;
 	for ( int i = 0; i < p.size (); i++ ) {
-		// if ( p[i].name == "MapsSv7" ) {
-		// 	continue;
-		// }
+		if ( minus ) {
+			i--;
+			minus = false;
+		}
+		if ( don[i] ) {
+			continue;
+		}
 		vector<bool> skills ( p[i].skills.size(), false );
 		int done = false;
 		vector<Contributor> contributorsTaken;
@@ -139,33 +145,25 @@ void backtrack ( vector<Project>& p, vector<Contributor>& c ) {
 				if ( contains ) {
 					skills[j] = true;
 					contributorsTaken.pb ( c[k] );
-					// debug ( c[k] )
 					ava[k] = true;
-					// for ( int l = 0; l < c[k].skill; l++ ) {
-					// 	for ( int m = 0; m < p[i].skills.size(); m++ ) {
-					// 		// debug ( "YES" )
-					// 		// if ( c[k].skills[l].key == p[i].skills[m].key && c[k].skills[l].level >= p[i].skills[m].level ) {
-					// 		// 	skills[m] = true;
-					// 		// }
-					// 	}
-					// }
+					done++;
 					break;
 				}
 			}
-		}
-		// debug ( "YES" )
-		for ( int j = 0; j < skills.size(); j++ ) {
-			if ( skills[j] ) {
-				done++;
+			if ( done == p[i].skills.size() ) {
+				don[i] = true;
+				minus = true;
+				ans.pb ( mp ( p[i], contributorsTaken ) );
+				i++;
+				done = 0;
+				continue;
 			}
 		}
 		if ( done == skills.size() ) {
 			// ava[k] = true;
+			don[i] = true;
 			ans.pb ( mp ( p[i], contributorsTaken ) );
 		}
-		// if ( ans.size() == 2 ) {
-		// 	break;
-		// }
 	}
 }
 
@@ -213,12 +211,12 @@ void main1() {
 		}
 	}
 	sort ( all ( projects ), [] ( const Project & p1, const Project & p2 ) {
-		return p1.bestScore > p2.bestScore;
+		return p1.bestScore > p2.bestScore || (p1.bestScore == p2.bestScore && p1.bestBefore > p2.bestBefore);
 	} );
 	// debug ( projects )
-	// sort ( all ( contributors ), [] ( const Contributor & c1, const Contributor & c2 ) {
-	// 	return c1.skill > c2.skill;
-	// } );
+	sort ( all ( contributors ), [] ( const Contributor & c1, const Contributor & c2 ) {
+		return c1.skill > c2.skill;
+	} );
 	backtrack ( projects, contributors );
 	cout << ans.size() << nline;
 	int sum = 0;
