@@ -6,9 +6,10 @@ unordered_map<string,int> skill_val;
 
 struct Skill {
   string name;
-  map<int,set<string>> persons;
+  vector<set<string>> persons;
   Skill(string _name) {
     name = _name;
+    persons.resize(105);
   }
   void add_person(string person, int level) {
     persons[level].insert(person);
@@ -18,8 +19,9 @@ struct Skill {
 vector<Skill> skills;
 struct Person {
   string name;
-  int busy;
+  bool busy;
   void read(int idx) {
+    busy = false;
     cin >> name;
     int cc; cin >> cc;
     while (cc--) {
@@ -34,6 +36,7 @@ struct Person {
   }
 };
 
+vector<Person> persons;
 struct Project {
   string name;
   vector<int> meta;
@@ -54,12 +57,21 @@ struct Project {
   vector<string> find_people() {
     vector<string> people;
     for (auto A: req) {
-      auto it = *skills[A.first].persons.rbegin();
-      if (it.first >= A.second) {
-        people.push_back(*it.second.begin());
-      } else {
-        people.resize(0);
-        return people;
+      cout << A.first << ' ' << A.second << '\n';
+      bool found = false;
+      for (int i = A.second; i < 105; ++i) {
+        for (const string& name: skills[A.first].persons[i]) {
+          if (persons[person_val[name]].busy) 
+            continue;
+          found = true;
+          people.push_back(name);
+          persons[person_val[name]].busy = true;
+          cout << "Found one person for " << A.first << " skill = " << people.back() << '\n';
+        }
+        if (found) break;
+      }
+      if (!found) {
+        return vector<string>();
       }
     }
     return people;
@@ -70,7 +82,6 @@ int main () {
   int C, P;
   cin >> C >> P;
 
-  vector<Person> persons;
   for (int i = 0; i < C; ++i) {
     Person person; person.read(i);
     persons.push_back(person);
