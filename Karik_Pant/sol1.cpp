@@ -6,9 +6,10 @@ unordered_map<string,int> skill_val;
 
 struct Skill {
   string name;
-  map<int,set<string>> persons;
+  vector<set<string>> persons;
   Skill(string _name) {
     name = _name;
+    persons.resize(105);
   }
   void add_person(string person, int level) {
     persons[level].insert(person);
@@ -18,7 +19,6 @@ struct Skill {
 vector<Skill> skills;
 struct Person {
   string name;
-  int busy;
   void read(int idx) {
     cin >> name;
     int cc; cin >> cc;
@@ -34,6 +34,8 @@ struct Person {
   }
 };
 
+vector<Person> persons;
+vector<int> busy;
 struct Project {
   string name;
   vector<int> meta;
@@ -51,15 +53,26 @@ struct Project {
       req[i] = { skill_val[skill], lvl };
     }
   }
-  vector<string> find_people() {
+  vector<string> find_people(int day) {
     vector<string> people;
-    for (auto A: req) {
-      auto it = *skills[A.first].persons.rbegin();
-      if (it.first >= A.second) {
-        people.push_back(*it.second.begin());
-      } else {
-        people.resize(0);
-        return people;
+    for (auto R: req) {
+      vector<int> set_busy;
+      bool found = false;
+      for (int lvl = R.second; lvl < 105; ++lvl) {
+        for (const string& name: skills[R.first].persons[lvl]) {
+          if (busy[person_val[name]] > day)
+            continue;
+          found = true;
+          busy[person_val[name]] += meta[1];
+          people.push_back(name);
+          break;
+        }
+      }
+      if (!found) {
+        for (const int& val: set_busy) {
+          busy[val] -= meta[1];
+        }
+        return vector<string>();
       }
     }
     return people;
@@ -70,7 +83,7 @@ int main () {
   int C, P;
   cin >> C >> P;
 
-  vector<Person> persons;
+  busy.resize(P, 0);
   for (int i = 0; i < C; ++i) {
     Person person; person.read(i);
     persons.push_back(person);
@@ -87,16 +100,23 @@ int main () {
       return A.meta[1] > B.meta[1];
     });
 
+  vector<string> ans_pro;
+  vector<vector<string>> ans_con;
   for (Project& project: projects) {
-    vector<string> names = project.find_people();
+    cout << "Checking for project " << project.name << '\n';
+    vector<string> names = project.find_people(0);
     if ((int)names.size() != 0) {
-      cout << "1\n";
-      cout << project.name << '\n';
-      for (const string& name: names) 
-        cout << name << ' ';
-      cout << '\n';
-      break;
+      ans_pro.push_back(project.name);
+      ans_con.push_back(names);
     }
+  }
+
+  cout << ans_pro.size() << '\n';
+  for (int i = 0; i < (int)ans_pro.size(); ++i) {
+    cout << ans_pro[i] << '\n';
+    for (const string& p_name: ans_con[i])
+      cout << p_name << ' ';
+    cout << '\n';
   }
 
   return 0;
