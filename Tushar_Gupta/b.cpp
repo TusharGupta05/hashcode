@@ -75,8 +75,106 @@ string debugging = "local";
 
 void getOutputs();
 void local();
+class Skill {
+	public:
+		string skill;
+		int key;
+		int level;
+		Skill ( string sk, int k, int lev ) : skill ( sk ), key ( k ), level ( lev ) {}
+		operator std::string() const {
+			return "\nskill: " + skill + " level: " + to_string ( level );
+		}
+		
+};
+class Contributor {
+	public:
+		string name;
+		int skills;
+		vector<Skill> skill;
+		operator std::string() const {
+			return "\nname: " + name;
+		}
+};
+
+class Project {
+	public:
+		string name;
+		vector<Skill> skills;
+		int roles;
+		int duration;
+		int bestScore;
+		int bestBefore;
+		operator std::string() const {
+			return "\nname: " + name + " duration: " + to_string ( duration ) + " bestScore: " + to_string ( bestScore ) + " bestBefore: " + to_string ( bestBefore );
+		}
+		
+};
+
+int backtrack ( vector<Project>& p, vector<Contributor>& c, vector<bool>& done, int doneCount, int presentDay, vector<bool>& available ) {
+	if ( doneCount == done.size() ) {
+		return 0;
+	}
+	for ( int i = 0; i < p.size(); i++ ) {
+		if ( done[i] == false ) {
+			for ( int j = 0; j < contributors.size(); j++ ) {
+				if ( available[j] == true ) {
+					for ( int k = 0; k < contributors[j].skill; k++ ) {
+					}
+				}
+			}
+		}
+	}
+}
 
 void main1() {
+	int P, C;
+	cin >> C >> P;
+	vector<Contributor> contributors ( C );
+	vector<Project> projects ( P );
+	map<string, int> skillsMap, contributorsMap, projectsMap;
+	map<int, string> skillsMapRev, contributorsMapRev, projectsMapRev;
+	for ( int i = 0; i < C; i++ ) {
+		// string name;
+		cin >> contributors[i].name >> contributors[i].skills;
+		if ( contributorsMap.count ( contributors[i].name ) == 0 ) {
+			contributorsMap[contributors[i].name] = contributorsMap.size();
+			contributorsMapRev[contributorsMap[contributors[i].name]] = contributors[i].name;
+		}
+		for ( int j = 0; j < contributors[i].skills; j++ ) {
+			string skill;
+			int level;
+			cin >> skill >> level;
+			if ( skillsMap.count ( skill ) == 0 ) {
+				skillsMap[skill] = skillsMap.size();
+				skillsMapRev[skillsMap[skill]] = skill;
+			}
+			contributors[i].skill.pb ( Skill ( skill, skillsMap[skill], level ) );
+		}
+	}
+	for ( int i = 0; i < P; i++ ) {
+		cin >> projects[i].name;
+		cin >> projects[i].duration >> projects[i].bestScore >> projects[i].bestBefore >> projects[i].roles;
+		if ( projectsMap.count ( projects[i].name ) == 0 ) {
+			projectsMap[projects[i].name] = projectsMap.size();
+			projectsMapRev[projectsMap[projects[i].name]] = projects[i].name;
+		}
+		for ( int j = 0; j < projects[i].roles; j++ ) {
+			string skill;
+			int level;
+			cin >> skill >> level;
+			if ( skillsMap.count ( skill ) == 0 ) {
+				skillsMap[skill] = skillsMap.size();
+				skillsMapRev[skillsMap[skill]] = skill;
+			}
+			projects[i].skills.pb ( Skill ( skill, skillsMap[skill], level ) );
+		}
+	}
+	sort ( all ( projects ), [] ( const Project & p1, const Project & p2 ) {
+		return p1.bestBefore < p2.bestBefore;
+	} );
+	sort ( all ( contributors ), [] ( const Contributor & c1, const Contributor & c2 ) {
+		return c1.skills > c2.skills;
+	} );
 }
 
 int main() {
