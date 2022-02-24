@@ -82,15 +82,15 @@ class Skill {
 		int level;
 		Skill ( string sk, int k, int lev ) : skill ( sk ), key ( k ), level ( lev ) {}
 		operator std::string() const {
-			return "\nskill: " + skill + " level: " + to_string ( level );
+			return "\nskill: " + skill + " level: " + to_string ( level ) ;
 		}
 		
 };
 class Contributor {
 	public:
 		string name;
-		int skills;
-		vector<Skill> skill;
+		int skill;
+		vector<Skill> skills;
 		operator std::string() const {
 			return "\nname: " + name;
 		}
@@ -105,24 +105,67 @@ class Project {
 		int bestScore;
 		int bestBefore;
 		operator std::string() const {
-			return "\nname: " + name + " duration: " + to_string ( duration ) + " bestScore: " + to_string ( bestScore ) + " bestBefore: " + to_string ( bestBefore );
+			return "\nname: " + name + " duration: " + to_string ( duration ) + " bestScore: " + to_string ( bestScore ) + " bestBefore: " + to_string ( bestBefore ) + " skill: " + to_string ( ( int ) skills.size() );
 		}
 		
 };
 
-int backtrack ( vector<Project>& p, vector<Contributor>& c, vector<bool>& done, int doneCount, int presentDay, vector<bool>& available ) {
-	if ( doneCount == done.size() ) {
-		return 0;
-	}
-	for ( int i = 0; i < p.size(); i++ ) {
-		if ( done[i] == false ) {
-			for ( int j = 0; j < contributors.size(); j++ ) {
-				if ( available[j] == true ) {
-					for ( int k = 0; k < contributors[j].skill; k++ ) {
+vector<pair<Project, vector<Contributor>>> ans;
+
+void backtrack ( vector<Project>& p, vector<Contributor>& c ) {
+	for ( int i = 0; i < p.size (); i++ ) {
+		// if ( p[i].name == "MapsSv7" ) {
+		// 	continue;
+		// }
+		vector<bool> skills ( p[i].skills.size(), false );
+		int done = false;
+		vector<Contributor> contributorsTaken;
+		vector<bool> ava ( c.size(), false );
+		for ( int j = 0; j < skills.size(); j++ ) {
+			if ( skills[j] ) {
+				continue;
+			}
+			bool contains = false;
+			for ( int k = 0; k < c.size(); k++ ) {
+				if ( ava[k] ) {
+					continue;
+				}
+				for ( int l = 0; l < c[k].skill; l++ ) {
+					if ( c[k].skills[l].key == p[i].skills[j].key && c[k].skills[l].level >= p[i].skills[j].level ) {
+						contains = true;
+						break;
 					}
+				}
+				if ( contains ) {
+					skills[j] = true;
+					contributorsTaken.pb ( c[k] );
+					// debug ( c[k] )
+					ava[k] = true;
+					// for ( int l = 0; l < c[k].skill; l++ ) {
+					// 	for ( int m = 0; m < p[i].skills.size(); m++ ) {
+					// 		// debug ( "YES" )
+					// 		// if ( c[k].skills[l].key == p[i].skills[m].key && c[k].skills[l].level >= p[i].skills[m].level ) {
+					// 		// 	skills[m] = true;
+					// 		// }
+					// 	}
+					// }
+					break;
 				}
 			}
 		}
+		// debug ( "YES" )
+		for ( int j = 0; j < skills.size(); j++ ) {
+			if ( skills[j] ) {
+				done++;
+			}
+		}
+		if ( done == skills.size() ) {
+			// ava[k] = true;
+			ans.pb ( mp ( p[i], contributorsTaken ) );
+		}
+		// if ( ans.size() == 2 ) {
+		// 	break;
+		// }
 	}
 }
 
@@ -135,12 +178,12 @@ void main1() {
 	map<int, string> skillsMapRev, contributorsMapRev, projectsMapRev;
 	for ( int i = 0; i < C; i++ ) {
 		// string name;
-		cin >> contributors[i].name >> contributors[i].skills;
+		cin >> contributors[i].name >> contributors[i].skill;
 		if ( contributorsMap.count ( contributors[i].name ) == 0 ) {
 			contributorsMap[contributors[i].name] = contributorsMap.size();
 			contributorsMapRev[contributorsMap[contributors[i].name]] = contributors[i].name;
 		}
-		for ( int j = 0; j < contributors[i].skills; j++ ) {
+		for ( int j = 0; j < contributors[i].skill; j++ ) {
 			string skill;
 			int level;
 			cin >> skill >> level;
@@ -148,7 +191,7 @@ void main1() {
 				skillsMap[skill] = skillsMap.size();
 				skillsMapRev[skillsMap[skill]] = skill;
 			}
-			contributors[i].skill.pb ( Skill ( skill, skillsMap[skill], level ) );
+			contributors[i].skills.pb ( Skill ( skill, skillsMap[skill], level ) );
 		}
 	}
 	for ( int i = 0; i < P; i++ ) {
@@ -170,11 +213,29 @@ void main1() {
 		}
 	}
 	sort ( all ( projects ), [] ( const Project & p1, const Project & p2 ) {
-		return p1.bestBefore < p2.bestBefore;
+		return p1.bestScore > p2.bestScore;
 	} );
-	sort ( all ( contributors ), [] ( const Contributor & c1, const Contributor & c2 ) {
-		return c1.skills > c2.skills;
-	} );
+	// debug ( projects )
+	// sort ( all ( contributors ), [] ( const Contributor & c1, const Contributor & c2 ) {
+	// 	return c1.skill > c2.skill;
+	// } );
+	backtrack ( projects, contributors );
+	cout << ans.size() << nline;
+	int sum = 0;
+	for ( auto [p, c] : ans ) {
+		cout << p.name << nline;
+		sum += p.bestScore;
+		map<string, int> done;
+		for ( auto cc : c ) {
+			if ( done[cc.name] ) {
+				continue;
+			}
+			done[cc.name] = 1;
+			cout << cc.name << " ";
+		}
+		cout << nline;
+	}
+	debug ( sum )
 }
 
 int main() {
@@ -199,7 +260,7 @@ void getOutputs() {
 	} else {
 		return;
 	}
-	int TC = 8;
+	int TC = 6;
 	const char* str[] = {"in_a.txt", "in_b.txt", "in_c.txt", "in_d.txt", "in_e.txt", "in_f.txt", "in_g.txt", "in_h.txt"};
 	const char* str1[] = {"out_a.txt", "out_b.txt", "out_c.txt", "out_d.txt", "out_e.txt", "out_f.txt", "out_g.txt", "out_h.txt"};
 	debugging = "a";

@@ -1,9 +1,2 @@
 debugging local
-projects [ 
-name: Logging duration: 5 bestScore: 10 bestBefore: 5 
-name: WebServer duration: 7 bestScore: 10 bestBefore: 7 
-name: WebChat duration: 10 bestScore: 20 bestBefore: 20 ]
-contributors [ 
-name: Bob 
-name: Anna 
-name: Maria ]
+sum 588354
