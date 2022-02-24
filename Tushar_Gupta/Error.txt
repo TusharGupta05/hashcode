@@ -1,2 +1,2 @@
 debugging local
-sum 588354
+sum 309485
